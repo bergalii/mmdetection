@@ -13,14 +13,12 @@ EPOCHS = 2
 data_root = '/content/mmdetection/data/Double-twelve-dominoes-2/'
 metainfo = dict(
     classes=('pip-1', 'pip-10', 'pip-11', 'pip-12', 'pip-2', 'pip-3', 'pip-4', 'pip-5', 'pip-6', 'pip-7', 'pip-8', 'pip-9'),
-    palette=[(20, 220, 60)] * {NUM_CLASSES}
+    palette=[(20, 220, 60)] * NUM_CLASSES
 )
-
-
 
 # Training dataset
 train_dataloader = dict(
-    batch_size={BATCH_SIZE},
+    batch_size=BATCH_SIZE,
     num_workers=2,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -34,12 +32,6 @@ train_dataloader = dict(
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True, with_mask=False),
-            dict(
-                type='RandomResize',
-                scale=(640, 640),
-                ratio_range=(0.1, 2.0),
-                keep_ratio=True),
-            dict(type='RandomFlip', prob=0.5),
             dict(type='PackDetInputs')
         ],
         metainfo=metainfo
@@ -48,7 +40,7 @@ train_dataloader = dict(
 
 # Validation dataset
 val_dataloader = dict(
-    batch_size=2,
+    batch_size=BATCH_SIZE,
     num_workers=2,
     persistent_workers=True,
     drop_last=False,
@@ -61,7 +53,6 @@ val_dataloader = dict(
         test_mode=True,
         pipeline=[
             dict(type='LoadImageFromFile'),
-            dict(type='Resize', scale=(640, 640), keep_ratio=True),
             dict(type='LoadAnnotations', with_bbox=True, with_mask=False),
             dict(
                 type='PackDetInputs',
@@ -88,6 +79,7 @@ model = dict(
     backbone=dict(
         _delete_=True,
         type='SwinTransformer',
+        pretrain_img_size=(1124, 1632),
         embed_dims=96,
         depths=[2, 2, 18, 2],
         num_heads=[3, 6, 12, 24],
