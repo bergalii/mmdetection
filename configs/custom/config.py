@@ -1,5 +1,4 @@
-base_ = [
-
+_base_ = [
     '/content/mmdetection/configs/_base_/models/cascade-rcnn_r50_fpn.py',
     '/content/mmdetection/configs/_base_/datasets/coco_detection.py',
     '/content/mmdetection/configs/_base_/schedules/schedule_1x.py',
@@ -8,16 +7,20 @@ base_ = [
 
   # ----- Dataset Configs ----- #
   # Dataset configs
-data_root = '{dataset.location}/'
+BATCH_SIZE = 2
+NUM_CLASSES = 12
+EPOCHS = 2
+data_root = '/content/mmdetection/data/Double-twelve-dominoes-2/'
 metainfo = dict(
     classes=('pip-1', 'pip-10', 'pip-11', 'pip-12', 'pip-2', 'pip-3', 'pip-4', 'pip-5', 'pip-6', 'pip-7', 'pip-8', 'pip-9'),
-    palette=[(20, 220, 60)] * 12
+    palette=[(20, 220, 60)] * {NUM_CLASSES}
 )
+
 
 
 # Training dataset
 train_dataloader = dict(
-    batch_size=2,
+    batch_size={BATCH_SIZE},
     num_workers=2,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -136,7 +139,7 @@ model = dict(
                 in_channels=256,
                 fc_out_channels=1024,
                 roi_feat_size=7,
-                num_classes=12,
+                num_classes=NUM_CLASSES,
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
                     target_means=[0., 0., 0., 0.],
@@ -153,7 +156,7 @@ model = dict(
                 in_channels=256,
                 fc_out_channels=1024,
                 roi_feat_size=7,
-                num_classes=12,
+                num_classes=NUM_CLASSES,
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
                     target_means=[0., 0., 0., 0.],
@@ -170,7 +173,7 @@ model = dict(
                 in_channels=256,
                 fc_out_channels=1024,
                 roi_feat_size=7,
-                num_classes=12,
+                num_classes=NUM_CLASSES,
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
                     target_means=[0., 0., 0., 0.],
@@ -266,11 +269,14 @@ model = dict(
             max_per_img=100)))
     )
 
+optim_wrapper = dict(
+		    optimizer=dict(lr=0.02, momentum=0.9, type='SGD', weight_decay=0.0001),
+		    type='OptimWrapper')
 # optimizer
 optimizer = dict(type='AdamW', lr=0.0001, betas=(0.9, 0.999), weight_decay=0.05,
-                 paramwise_cfg=dict(custom_keys={{'absolute_pos_embed': dict(decay_mult=0.),
+                 paramwise_cfg=dict(custom_keys={'absolute_pos_embed': dict(decay_mult=0.),
                                                  'relative_position_bias_table': dict(decay_mult=0.),
-                                                 'norm': dict(decay_mult=0.)}}))
+                                                 'norm': dict(decay_mult=0.)}))
 
 # learning rate
 param_scheduler = [
@@ -302,6 +308,6 @@ val_evaluator = dict(
 test_evaluator = val_evaluator
 
 # Training and testing config
-train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=2, val_interval=1)
+train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=EPOCHS, val_interval=1)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
